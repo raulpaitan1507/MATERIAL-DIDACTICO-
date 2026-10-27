@@ -1,0 +1,885 @@
+Código del html:
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Interés Simple | 4.° Secundaria - Huancayo</title>
+<style>
+  :root {
+    --verde: #1a7a4c;
+    --verde-claro: #e8f5e9;
+    --azul: #1565c0;
+    --naranja: #ef6c00;
+    --rojo: #c62828;
+    --gris: #546e7a;
+    --fondo: #f5f7fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%);
+    min-height: 100vh;
+    color: #1a237e;
+    line-height: 1.5;
+  }
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+  header {
+    background: linear-gradient(90deg, var(--verde), #2e7d32);
+    color: white;
+    padding: 18px 20px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  header h1 { font-size: 1.45rem; margin-bottom: 4px; }
+  header p { font-size: 0.95rem; opacity: 0.95; }
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 18px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  }
+  .competencia {
+    background: var(--verde-claro);
+    border-left: 5px solid var(--verde);
+    padding: 14px 16px;
+    border-radius: 0 12px 12px 0;
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+  .btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+  .btn:active { transform: translateY(0); }
+  .btn-primary { background: var(--verde); color: white; }
+  .btn-secondary { background: #e0e0e0; color: #333; }
+  .btn-hint { background: #fff3e0; color: var(--naranja); border: 2px solid var(--naranja); }
+  .btn-check { background: var(--azul); color: white; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  #pantalla-inicio { text-align: center; }
+  #pantalla-inicio .instrucciones { text-align: left; margin: 18px 0; }
+  #pantalla-inicio ul { padding-left: 22px; margin-top: 8px; }
+  .nivel-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .nivel-facil { background: #c8e6c9; color: #1b5e20; }
+  .nivel-intermedio { background: #fff9c4; color: #f57f17; }
+  .nivel-avanzado { background: #ffcdd2; color: #b71c1c; }
+  .temporizador {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--rojo);
+    background: #ffebee;
+    padding: 8px 16px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .temporizador.alerta { animation: pulso 1s infinite; }
+  @keyframes pulso {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .barra-progreso {
+    height: 10px;
+    background: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+  .barra-progreso-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--verde), #43a047);
+    transition: width 0.4s;
+  }
+  .tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin: 14px 0;
+  }
+  .tarjeta {
+    background: #f5f5f5;
+    border: 3px solid #ddd;
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.92rem;
+    user-select: none;
+  }
+  .tarjeta:hover { border-color: var(--azul); background: #e3f2fd; }
+  .tarjeta.seleccionada { border-color: var(--verde); background: var(--verde-claro); font-weight: 600; }
+  .tarjeta.correcta { border-color: #2e7d32; background: #c8e6c9; }
+  .tarjeta.incorrecta { border-color: #c62828; background: #ffcdd2; }
+  .zona-asignacion {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 12px 0;
+  }
+  .slot {
+    flex: 1;
+    min-width: 120px;
+    border: 2px dashed #90a4ae;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    background: #fafafa;
+    min-height: 70px;
+  }
+  .slot.lleno { border-style: solid; border-color: var(--verde); background: var(--verde-claro); }
+  .slot label { display: block; font-size: 0.8rem; color: var(--gris); margin-bottom: 4px; }
+  .opciones-mc {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .opcion-mc {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .opcion-mc:hover { border-color: var(--azul); background: #e3f2fd; }
+  .opcion-mc.seleccionada { border-color: var(--azul); background: #bbdefb; }
+  .opcion-mc.correcta { border-color: #2e7d32; background: #c8e6c9; }
+  .opcion-mc.incorrecta { border-color: #c62828; background: #ffcdd2; }
+  .input-respuesta {
+    width: 100%;
+    max-width: 220px;
+    padding: 12px 16px;
+    font-size: 1.2rem;
+    border: 2px solid #90a4ae;
+    border-radius: 10px;
+    text-align: center;
+  }
+  .input-respuesta:focus { outline: none; border-color: var(--azul); }
+  .feedback {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    display: none;
+  }
+  .feedback.visible { display: block; }
+  .feedback.correcto { background: #e8f5e9; border: 2px solid #2e7d32; color: #1b5e20; }
+  .feedback.incorrecto { background: #fff3e0; border: 2px solid #ef6c00; color: #e65100; }
+  .feedback.pista { background: #e3f2fd; border: 2px solid #1565c0; color: #0d47a1; }
+  .paso-a-paso {
+    background: #f1f8e9;
+    border-left: 4px solid var(--verde);
+    padding: 12px 16px;
+    margin-top: 12px;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.93rem;
+  }
+  .paso-a-paso ol { padding-left: 20px; }
+  .paso-a-paso li { margin-bottom: 6px; }
+  .escalera {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 6px;
+    margin: 20px 0;
+  }
+  .peldaño {
+    width: 85%;
+    max-width: 320px;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    position: relative;
+    transition: all 0.4s;
+  }
+  .peldaño.c { background: #ffcdd2; color: #b71c1c; }
+  .peldaño.b { background: #fff9c4; color: #f57f17; }
+  .peldaño.a { background: #c8e6c9; color: #1b5e20; }
+  .peldaño.ad { background: #b3e5fc; color: #01579b; }
+  .estudiante-animado {
+    font-size: 2.8rem;
+    transition: transform 0.6s ease;
+    display: inline-block;
+  }
+  .puntaje-final {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--verde);
+    text-align: center;
+    margin: 12px 0;
+  }
+  .oculto { display: none !important; }
+  .flex-entre {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .intentos { font-size: 0.9rem; color: var(--gris); }
+  footer {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--gris);
+    margin-top: 24px;
+    padding-bottom: 20px;
+  }
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.2rem; }
+    .tarjeta { font-size: 0.85rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🧮 Simulador de Interés Simple</h1>
+    <p>4.° de secundaria · Matemática · Huancayo · CNEB</p>
+  </header>
+
+  <!-- PANTALLA DE INICIO -->
+  <div id="pantalla-inicio" class="card">
+    <div class="competencia">
+      <strong>Competencia:</strong> Resuelve problemas de cantidad.<br>
+      <strong>Capacidades prioritarias:</strong> Traduce cantidades a expresiones numéricas y Comunica su comprensión sobre los números y las operaciones.<br>
+      <strong>Modelo:</strong> I = C × r × t &nbsp;(donde r está en forma decimal y t en la misma unidad que la tasa).
+    </div>
+    <div class="instrucciones">
+      <h2 style="margin-bottom:10px;">Instrucciones</h2>
+      <ul>
+        <li>Resolverás <strong>5 problemas</strong> de interés simple contextualizados en Huancayo (mercados, ferias, cooperativas y vida cotidiana).</li>
+        <li>Niveles: <span class="nivel-badge nivel-facil">Fácil</span> <span class="nivel-badge nivel-intermedio">Intermedio</span> <span class="nivel-badge nivel-avanzado">Avanzado</span></li>
+        <li>En cada problema podrás: identificar datos con tarjetas, elegir la fórmula o procedimiento correcto y escribir el valor numérico.</li>
+        <li>Tienes <strong>5 minutos</strong> por problema y hasta <strong>3 intentos</strong>. Después de 3 errores pasas al siguiente.</li>
+        <li>Usa el botón de <strong>pista progresiva</strong> cuando lo necesites (no revela la respuesta final).</li>
+        <li>Al final verás tu puntaje sobre 20 y la Escalera de Progreso CNEB. Podrás reintentar los problemas no resueltos una vez.</li>
+      </ul>
+    </div>
+    <button class="btn btn-primary" id="btn-comenzar" style="margin-top:16px; font-size:1.15rem;">Comenzar</button>
+  </div>
+
+  <!-- PANTALLA DE PROBLEMA -->
+  <div id="pantalla-problema" class="oculto">
+    <div class="flex-entre" style="margin-bottom:12px;">
+      <div>
+        <span id="num-problema" style="font-weight:700;"></span>
+        <span id="badge-nivel" class="nivel-badge"></span>
+      </div>
+      <div class="temporizador" id="temporizador">⏱️ 05:00</div>
+    </div>
+    <div class="barra-progreso"><div class="barra-progreso-fill" id="barra-fill" style="width:0%"></div></div>
+    <div class="card">
+      <div id="enunciado"></div>
+      <div id="zona-interaccion"></div>
+      <div class="flex-entre" style="margin-top:16px;">
+        <div>
+          <button class="btn btn-hint" id="btn-pista">💡 Pista</button>
+          <span class="intentos" id="intentos-info"></span>
+        </div>
+        <button class="btn btn-check" id="btn-verificar">Verificar respuesta</button>
+      </div>
+      <div id="feedback" class="feedback"></div>
+    </div>
+  </div>
+
+  <!-- PANTALLA FINAL -->
+  <div id="pantalla-final" class="oculto card" style="text-align:center;">
+    <h2>¡Terminaste el simulador!</h2>
+    <div class="estudiante-animado" id="emoji-final">😊</div>
+    <div class="puntaje-final" id="puntaje-texto">0 / 20</div>
+    <p id="nivel-logro" style="font-size:1.15rem; font-weight:600; margin-bottom:16px;"></p>
+    <div class="escalera" id="escalera"></div>
+    <div id="resumen-problemas" style="text-align:left; margin:20px 0;"></div>
+    <div id="zona-reintento" class="oculto" style="margin-top:16px;">
+      <p>Tienes problemas sin resolver. ¿Quieres intentar una vez más los que faltan?</p>
+      <button class="btn btn-primary" id="btn-reintentar">Reintentar problemas pendientes</button>
+    </div>
+    <button class="btn btn-secondary" id="btn-reiniciar" style="margin-top:12px;">Volver a empezar todo</button>
+  </div>
+
+  <footer>
+    Material educativo alineado al CNEB · Interés simple · 4.° de secundaria · Huancayo<br>
+    Modelo: I = C × r × t &nbsp;|&nbsp; Funciona sin conexión a internet
+  </footer>
+</div>
+
+<script>
+// ==================== DATOS DE LOS 5 PROBLEMAS ====================
+const problemas = [
+  {
+    id: 1,
+    nivel: "fácil",
+    puntos: 4,
+    enunciado: `En la feria dominical de Huancayo, doña Rosa deposita S/ 2 400 en una cooperativa local que le ofrece una tasa de interés simple del 5 % anual. ¿Cuánto interés generará su capital al cabo de 3 años?`,
+    datos: [
+      { texto: "S/ 2 400", tipo: "C" },
+      { texto: "5 % anual", tipo: "r" },
+      { texto: "3 años", tipo: "t" },
+      { texto: "S/ 7 200", tipo: "distractor" }
+    ],
+    mcq: {
+      pregunta: "¿Cuál es la expresión correcta para calcular el interés?",
+      opciones: [
+        { texto: "I = 2400 × 0,05 × 3", correcta: true },
+        { texto: "I = 2400 × 5 × 3", correcta: false },
+        { texto: "I = 2400 × 0,05 × 12", correcta: false },
+        { texto: "I = 2400 + 0,05 × 3", correcta: false }
+      ]
+    },
+    respuestaCorrecta: 360,
+    unidad: "soles",
+    tolerancia: 0.5,
+    pistas: [
+      "Recuerda que la tasa debe expresarse en forma decimal: 5 % = 0,05.",
+      "El tiempo y la tasa deben estar en la misma unidad (ambos anuales). No es necesario convertir.",
+      "Aplica directamente I = C × r × t con los tres datos identificados."
+    ],
+    pasos: [
+      "Identificamos: C = 2400, r = 5 % = 0,05, t = 3 años.",
+      "Escribimos la fórmula: I = C × r × t",
+      "Sustituimos: I = 2400 × 0,05 × 3",
+      "Calculamos: 2400 × 0,05 = 120; 120 × 3 = 360.",
+      "Por lo tanto, el interés generado es S/ 360."
+    ],
+    errorComun: "Si olvidaste convertir el 5 % a 0,05, el resultado saldrá 100 veces más grande."
+  },
+  {
+    id: 2,
+    nivel: "fácil",
+    puntos: 4,
+    enunciado: `Un productor de papa de la zona de Sapallanga necesita un préstamo de S/ 8 000 para comprar semillas. Una caja rural le ofrece interés simple del 1,5 % mensual. ¿Qué interés pagará si devuelve el dinero en 8 meses?`,
+    datos: [
+      { texto: "S/ 8 000", tipo: "C" },
+      { texto: "1,5 % mensual", tipo: "r" },
+      { texto: "8 meses", tipo: "t" },
+      { texto: "12 meses", tipo: "distractor" }
+    ],
+    mcq: {
+      pregunta: "¿Qué procedimiento es correcto?",
+      opciones: [
+        { texto: "Convertir 1,5 % a 0,015 y multiplicar por 8 meses", correcta: true },
+        { texto: "Convertir 8 meses a años y usar tasa anual", correcta: false },
+        { texto: "Multiplicar 8000 × 1,5 × 8 sin convertir el porcentaje", correcta: false },
+        { texto: "Usar tasa de 1,5 % anual porque el capital es grande", correcta: false }
+      ]
+    },
+    respuestaCorrecta: 960,
+    unidad: "soles",
+    tolerancia: 0.5,
+    pistas: [
+      "La tasa es mensual y el tiempo también está en meses: no necesitas convertir a años.",
+      "1,5 % = 1,5 / 100 = 0,015.",
+      "I = 8000 × 0,015 × 8."
+    ],
+    pasos: [
+      "C = 8000 soles, r = 1,5 % mensual = 0,015, t = 8 meses.",
+      "I = C × r × t = 8000 × 0,015 × 8",
+      "8000 × 0,015 = 120; 120 × 8 = 960.",
+      "El interés que pagará es S/ 960."
+    ],
+    errorComun: "Un error frecuente es tratar la tasa mensual como si fuera anual."
+  },
+  {
+    id: 3,
+    nivel: "intermedio",
+    puntos: 4,
+    enunciado: `En el mercado Mayorista de Huancayo, un comerciante de artesanías deposita S/ 5 000 a una tasa de interés simple del 12 % anual. ¿Cuánto tiempo (en meses) debe dejar el dinero para generar un interés de S/ 900?`,
+    datos: [
+      { texto: "S/ 5 000", tipo: "C" },
+      { texto: "12 % anual", tipo: "r" },
+      { texto: "S/ 900", tipo: "I" },
+      { texto: "1 año", tipo: "distractor" }
+    ],
+    mcq: {
+      pregunta: "Para hallar el tiempo, ¿qué fórmula despejada usas?",
+      opciones: [
+        { texto: "t = I / (C × r)", correcta: true },
+        { texto: "t = C × r / I", correcta: false },
+        { texto: "t = I × C × r", correcta: false },
+        { texto: "t = I / C + r", correcta: false }
+      ]
+    },
+    respuestaCorrecta: 18,
+    unidad: "meses",
+    tolerancia: 0.1,
+    pistas: [
+      "Primero calcula el tiempo en años con t = I / (C × r).",
+      "12 % = 0,12. Luego multiplica el resultado en años por 12 para obtener meses.",
+      "Verifica: 5000 × 0,12 × 1,5 = 900 → 1,5 años = 18 meses."
+    ],
+    pasos: [
+      "Datos: C = 5000, r = 0,12, I = 900. Buscamos t.",
+      "Despejamos: t = I / (C × r) = 900 / (5000 × 0,12) = 900 / 600 = 1,5 años.",
+      "Convertimos a meses: 1,5 × 12 = 18 meses.",
+      "El capital debe permanecer 18 meses."
+    ],
+    errorComun: "Si dejas la respuesta en años (1,5) en lugar de meses, no coincide con lo pedido."
+  },
+  {
+    id: 4,
+    nivel: "intermedio",
+    puntos: 4,
+    enunciado: `Una familia de El Tambo quiere ahorrar para la Feria de Huancayo. Deposita S/ 3 600 y después de 15 meses recibe un interés de S/ 540. ¿Cuál fue la tasa de interés simple anual que le aplicaron? (Expresa el porcentaje entero).`,
+    datos: [
+      { texto: "S/ 3 600", tipo: "C" },
+      { texto: "15 meses", tipo: "t" },
+      { texto: "S/ 540", tipo: "I" },
+      { texto: "S/ 4 140", tipo: "distractor" }
+    ],
+    mcq: {
+      pregunta: "¿Cómo homogenizas el tiempo con una tasa anual?",
+      opciones: [
+        { texto: "Conviertes 15 meses a 15/12 = 1,25 años", correcta: true },
+        { texto: "Usas la tasa mensual directamente sin convertir", correcta: false },
+        { texto: "Multiplicas 15 meses por 12", correcta: false },
+        { texto: "No es necesario homogenizar porque el interés es simple", correcta: false }
+      ]
+    },
+    respuestaCorrecta: 12,
+    unidad: "%",
+    tolerancia: 0.2,
+    pistas: [
+      "Convierte 15 meses a años: 15 ÷ 12 = 1,25 años.",
+      "Despeja r = I / (C × t).",
+      "El resultado decimal (0,12) se expresa como 12 %."
+    ],
+    pasos: [
+      "C = 3600, I = 540, t = 15/12 = 1,25 años.",
+      "r = I / (C × t) = 540 / (3600 × 1,25) = 540 / 4500 = 0,12.",
+      "0,12 = 12 % anual.",
+      "La tasa de interés simple anual fue del 12 %."
+    ],
+    errorComun: "Si usas t = 15 (sin convertir a años) obtendrás una tasa mensual, no anual."
+  },
+  {
+    id: 5,
+    nivel: "avanzado",
+    puntos: 4,
+    enunciado: `Un emprendedor de la cadena productiva de la maca en Junín obtiene un préstamo de S/ 12 000. Le ofrecen dos opciones de interés simple:
+• Opción A: 9 % anual durante 2 años y 4 meses.
+• Opción B: 0,8 % mensual durante el mismo tiempo.
+¿Cuál opción genera MENOR interés y de cuánto es ese interés menor? (Responde solo el valor del interés de la opción más conveniente).`,
+    datos: [
+      { texto: "S/ 12 000", tipo: "C" },
+      { texto: "9 % anual", tipo: "rA" },
+      { texto: "0,8 % mensual", tipo: "rB" },
+      { texto: "2 años 4 meses", tipo: "t" }
+    ],
+    mcq: {
+      pregunta: "¿Qué debes hacer primero para comparar correctamente?",
+      opciones: [
+        { texto: "Expresar ambas tasas y el tiempo en la misma unidad (meses o años)", correcta: true },
+        { texto: "Comparar solo los porcentajes 9 y 0,8 sin convertir", correcta: false },
+        { texto: "Usar siempre la tasa anual porque es más grande", correcta: false },
+        { texto: "Calcular solo la opción A y asumir que es menor", correcta: false }
+      ]
+    },
+    respuestaCorrecta: 2240, // interés de la opción A (menor)
+    unidad: "soles",
+    tolerancia: 1,
+    pistas: [
+      "Convierte 2 años 4 meses a meses: 24 + 4 = 28 meses. O a años: 2 + 4/12 = 7/3 ≈ 2,333 años.",
+      "Opción A: r = 0,09 anual → I_A = 12000 × 0,09 × (28/12).",
+      "Opción B: r = 0,008 mensual → I_B = 12000 × 0,008 × 28. Compara ambos resultados."
+    ],
+    pasos: [
+      "Tiempo común: 2 años 4 meses = 28 meses = 28/12 = 7/3 años.",
+      "Opción A: I_A = 12000 × 0,09 × (28/12) = 12000 × 0,09 × 2,333... = 2520.",
+      "Opción B: I_B = 12000 × 0,008 × 28 = 2688.",
+      "La opción A genera menor interés: S/ 2 520. (El problema pide el interés de la opción más conveniente).",
+      "Espera: recalculando con exactitud: 28/12 = 7/3 ≈ 2,3333; 12000 × 0,09 × 7/3 = 12000 × 0,03 × 7 = 360 × 7 = 2520.",
+      "Sin embargo, el enunciado pide el interés de la opción más conveniente (A = 2520). Corrijo respuestaCorrecta a 2520."
+    ],
+    errorComun: "Si no homogenizas las unidades, compararás tasas incompatibles y el resultado será incorrecto."
+  }
+];
+
+// Corrección del problema 5 (cálculo exacto)
+problemas[4].respuestaCorrecta = 2520;
+problemas[4].pasos = [
+  "Unificamos el tiempo: 2 años 4 meses = 28 meses = 28/12 = 7/3 años.",
+  "Opción A (9 % anual): I_A = 12000 × 0,09 × (7/3) = 12000 × 0,03 × 7 = 2520 soles.",
+  "Opción B (0,8 % mensual): I_B = 12000 × 0,008 × 28 = 2688 soles.",
+  "La opción A genera el menor interés: S/ 2 520.",
+  "Por lo tanto, la respuesta es 2520."
+];
+
+// ==================== ESTADO DEL SIMULADOR ====================
+let estado = {
+  indice: 0,
+  puntaje: 0,
+  intentos: 0,
+  pistasUsadas: 0,
+  timerId: null,
+  segundosRestantes: 300,
+  resueltos: [],
+  fallidos: [],
+  modoReintento: false,
+  problemasActuales: []
+};
+
+// ==================== REFERENCIAS DOM ====================
+const pantallaInicio = document.getElementById('pantalla-inicio');
+const pantallaProblema = document.getElementById('pantalla-problema');
+const pantallaFinal = document.getElementById('pantalla-final');
+const btnComenzar = document.getElementById('btn-comenzar');
+const btnVerificar = document.getElementById('btn-verificar');
+const btnPista = document.getElementById('btn-pista');
+const btnReintentar = document.getElementById('btn-reintentar');
+const btnReiniciar = document.getElementById('btn-reiniciar');
+
+// ==================== FUNCIONES PRINCIPALES ====================
+btnComenzar.addEventListener('click', () => {
+  estado.problemasActuales = [...problemas];
+  estado.indice = 0;
+  estado.puntaje = 0;
+  estado.resueltos = [];
+  estado.fallidos = [];
+  estado.modoReintento = false;
+  mostrarProblema();
+});
+
+function mostrarProblema() {
+  clearInterval(estado.timerId);
+  estado.intentos = 0;
+  estado.pistasUsadas = 0;
+  estado.segundosRestantes = 300;
+
+  const p = estado.problemasActuales[estado.indice];
+  pantallaInicio.classList.add('oculto');
+  pantallaFinal.classList.add('oculto');
+  pantallaProblema.classList.remove('oculto');
+
+  document.getElementById('num-problema').textContent = `Problema ${estado.indice + 1} de ${estado.problemasActuales.length}`;
+  const badge = document.getElementById('badge-nivel');
+  badge.textContent = p.nivel.toUpperCase();
+  badge.className = 'nivel-badge nivel-' + p.nivel;
+
+  document.getElementById('enunciado').innerHTML = `<p style="font-size:1.05rem; margin-bottom:8px;">${p.enunciado}</p>`;
+  document.getElementById('barra-fill').style.width = ((estado.indice) / estado.problemasActuales.length * 100) + '%';
+  document.getElementById('intentos-info').textContent = `Intentos: 0/3`;
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').innerHTML = '';
+
+  construirInteraccion(p);
+  iniciarTemporizador();
+  btnVerificar.disabled = false;
+  btnPista.disabled = false;
+}
+
+function construirInteraccion(p) {
+  const zona = document.getElementById('zona-interaccion');
+  zona.innerHTML = '';
+
+  // 1. Tarjetas seleccionables para identificar C, r, t
+  const tituloTarjetas = document.createElement('h3');
+  tituloTarjetas.style.fontSize = '1rem';
+  tituloTarjetas.style.margin = '14px 0 8px';
+  tituloTarjetas.textContent = '1. Identifica los datos: haz clic en cada tarjeta y asígnala al concepto correcto';
+  zona.appendChild(tituloTarjetas);
+
+  const contTarjetas = document.createElement('div');
+  contTarjetas.className = 'tarjetas';
+  contTarjetas.id = 'cont-tarjetas';
+  p.datos.forEach((d, i) => {
+    const t = document.createElement('div');
+    t.className = 'tarjeta';
+    t.textContent = d.texto;
+    t.dataset.tipo = d.tipo;
+    t.dataset.index = i;
+    t.addEventListener('click', () => seleccionarTarjeta(t));
+    contTarjetas.appendChild(t);
+  });
+  zona.appendChild(contTarjetas);
+
+  const zonasAsig = document.createElement('div');
+  zonasAsig.className = 'zona-asignacion';
+  zonasAsig.innerHTML = `
+    <div class="slot" id="slot-C" data-slot="C"><label>Capital (C)</label><span class="valor-slot">—</span></div>
+    <div class="slot" id="slot-r" data-slot="r"><label>Tasa (r)</label><span class="valor-slot">—</span></div>
+    <div class="slot" id="slot-t" data-slot="t"><label>Tiempo (t)</label><span class="valor-slot">—</span></div>
+  `;
+  zona.appendChild(zonasAsig);
+
+  // 2. Selección múltiple
+  const tituloMc = document.createElement('h3');
+  tituloMc.style.fontSize = '1rem';
+  tituloMc.style.margin = '18px 0 8px';
+  tituloMc.textContent = '2. ' + p.mcq.pregunta;
+  zona.appendChild(tituloMc);
+
+  const contMc = document.createElement('div');
+  contMc.className = 'opciones-mc';
+  contMc.id = 'cont-mc';
+  p.mcq.opciones.forEach((op, i) => {
+    const div = document.createElement('div');
+    div.className = 'opcion-mc';
+    div.dataset.index = i;
+    div.innerHTML = `<input type="radio" name="mcq" value="${i}"> <span>${op.texto}</span>`;
+    div.addEventListener('click', () => {
+      document.querySelectorAll('.opcion-mc').forEach(o => o.classList.remove('seleccionada'));
+      div.classList.add('seleccionada');
+      div.querySelector('input').checked = true;
+    });
+    contMc.appendChild(div);
+  });
+  zona.appendChild(contMc);
+
+  // 3. Respuesta numérica
+  const tituloNum = document.createElement('h3');
+  tituloNum.style.fontSize = '1rem';
+  tituloNum.style.margin = '18px 0 8px';
+  tituloNum.textContent = `3. Escribe el valor numérico de la respuesta (en ${p.unidad}):`;
+  zona.appendChild(tituloNum);
+
+  const input = document.createElement('input');
+  input.type = 'number';
+  input.step = 'any';
+  input.className = 'input-respuesta';
+  input.id = 'input-respuesta';
+  input.placeholder = 'Ej: 360';
+  zona.appendChild(input);
+}
+
+let tarjetaSeleccionada = null;
+function seleccionarTarjeta(el) {
+  if (el.classList.contains('asignada')) return;
+  document.querySelectorAll('.tarjeta').forEach(t => t.classList.remove('seleccionada'));
+  el.classList.add('seleccionada');
+  tarjetaSeleccionada = el;
+}
+
+document.addEventListener('click', (e) => {
+  const slot = e.target.closest('.slot');
+  if (slot && tarjetaSeleccionada) {
+    const span = slot.querySelector('.valor-slot');
+    span.textContent = tarjetaSeleccionada.textContent;
+    span.dataset.tipo = tarjetaSeleccionada.dataset.tipo;
+    slot.classList.add('lleno');
+    tarjetaSeleccionada.classList.add('asignada');
+    tarjetaSeleccionada.style.opacity = '0.5';
+    tarjetaSeleccionada.classList.remove('seleccionada');
+    tarjetaSeleccionada = null;
+  }
+});
+
+function iniciarTemporizador() {
+  const el = document.getElementById('temporizador');
+  el.classList.remove('alerta');
+  clearInterval(estado.timerId);
+  estado.timerId = setInterval(() => {
+    estado.segundosRestantes--;
+    const m = Math.floor(estado.segundosRestantes / 60);
+    const s = estado.segundosRestantes % 60;
+    el.textContent = `⏱️ ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if (estado.segundosRestantes <= 60) el.classList.add('alerta');
+    if (estado.segundosRestantes <= 0) {
+      clearInterval(estado.timerId);
+      manejarTiempoAgotado();
+    }
+  }, 1000);
+}
+
+function manejarTiempoAgotado() {
+  const p = estado.problemasActuales[estado.indice];
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback visible incorrecto';
+  fb.innerHTML = `<strong>⏱ Tiempo agotado.</strong> Se registra como no resuelto. ${p.errorComun || ''}`;
+  estado.fallidos.push(p.id);
+  btnVerificar.disabled = true;
+  btnPista.disabled = true;
+  setTimeout(() => avanzar(), 2800);
+}
+
+btnPista.addEventListener('click', () => {
+  const p = estado.problemasActuales[estado.indice];
+  if (estado.pistasUsadas >= p.pistas.length) {
+    mostrarFeedback('pista', 'Ya no hay más pistas. Revisa los datos y la fórmula I = C × r × t.');
+    return;
+  }
+  const texto = p.pistas[estado.pistasUsadas];
+  estado.pistasUsadas++;
+  mostrarFeedback('pista', `💡 Pista ${estado.pistasUsadas}: ${texto}`);
+});
+
+btnVerificar.addEventListener('click', () => {
+  const p = estado.problemasActuales[estado.indice];
+  estado.intentos++;
+  document.getElementById('intentos-info').textContent = `Intentos: ${estado.intentos}/3`;
+
+  // Evaluar tarjetas (orientativo)
+  const slotC = document.querySelector('#slot-C .valor-slot');
+  const slotR = document.querySelector('#slot-r .valor-slot');
+  const slotT = document.querySelector('#slot-t .valor-slot');
+
+  // Evaluar MCQ
+  const mcSel = document.querySelector('input[name="mcq"]:checked');
+  let mcCorrecta = false;
+  if (mcSel) {
+    const idx = parseInt(mcSel.value);
+    mcCorrecta = p.mcq.opciones[idx].correcta;
+    document.querySelectorAll('.opcion-mc').forEach((o, i) => {
+      o.classList.remove('seleccionada');
+      if (p.mcq.opciones[i].correcta) o.classList.add('correcta');
+      else if (i === idx) o.classList.add('incorrecta');
+    });
+  }
+
+  // Evaluar respuesta numérica
+  const inputVal = parseFloat(document.getElementById('input-respuesta').value);
+  const numCorrecta = !isNaN(inputVal) && Math.abs(inputVal - p.respuestaCorrecta) <= p.tolerancia;
+
+  if (numCorrecta) {
+    // Correcto
+    clearInterval(estado.timerId);
+    estado.puntaje += p.puntos;
+    estado.resueltos.push(p.id);
+    let html = `<strong>✅ ¡Correcto!</strong> Obtuviste ${p.puntos} puntos.<br>`;
+    if (!mcCorrecta && mcSel) html += `Aunque la opción de procedimiento no era la más precisa, el valor numérico es correcto.<br>`;
+    html += `<div class="paso-a-paso"><strong>Paso a paso completo:</strong><ol>`;
+    p.pasos.forEach(paso => html += `<li>${paso}</li>`);
+    html += `</ol></div>`;
+    mostrarFeedback('correcto', html);
+    btnVerificar.disabled = true;
+    btnPista.disabled = true;
+    setTimeout(() => avanzar(), 4500);
+  } else {
+    // Incorrecto
+    let msg = `<strong>❌ Respuesta incorrecta</strong> (intento ${estado.intentos}/3).<br>`;
+    if (isNaN(inputVal)) {
+      msg += `No se ingresó un valor numérico válido. `;
+    } else {
+      msg += `El valor ${inputVal} no coincide con el resultado esperado. `;
+    }
+    if (!mcCorrecta && mcSel) {
+      msg += `Revisa también la fórmula o el procedimiento que elegiste. `;
+    }
+    msg += p.errorComun || `Verifica que la tasa esté en decimal y que el tiempo coincida con la unidad de la tasa.`;
+    mostrarFeedback('incorrecto', msg);
+
+    if (estado.intentos >= 3) {
+      clearInterval(estado.timerId);
+      estado.fallidos.push(p.id);
+      let htmlFinal = msg + `<br><br><strong>Se agotaron los 3 intentos.</strong> Aquí está la resolución completa:<div class="paso-a-paso"><ol>`;
+      p.pasos.forEach(paso => htmlFinal += `<li>${paso}</li>`);
+      htmlFinal += `</ol></div>`;
+      mostrarFeedback('incorrecto', htmlFinal);
+      btnVerificar.disabled = true;
+      btnPista.disabled = true;
+      setTimeout(() => avanzar(), 5000);
+    }
+  }
+});
+
+function mostrarFeedback(tipo, html) {
+  const fb = document.getElementById('feedback');
+  fb.className = `feedback visible ${tipo}`;
+  fb.innerHTML = html;
+}
+
+function avanzar() {
+  estado.indice++;
+  if (estado.indice >= estado.problemasActuales.length) {
+    mostrarPantallaFinal();
+  } else {
+    mostrarProblema();
+  }
+}
+
+function mostrarPantallaFinal() {
+  clearInterval(estado.timerId);
+  pantallaProblema.classList.add('oculto');
+  pantallaFinal.classList.remove('oculto');
+
+  const total = 20;
+  const pts = Math.min(estado.puntaje, total);
+  document.getElementById('puntaje-texto').textContent = `${pts} / ${total}`;
+
+  let nivel, emoji, clase;
+  if (pts <= 10) { nivel = 'En Inicio (C)'; emoji = '🌱'; clase = 'c'; }
+  else if (pts <= 13) { nivel = 'En Proceso (B)'; emoji = '🚶'; clase = 'b'; }
+  else if (pts <= 17) { nivel = 'Logro Esperado (A)'; emoji = '😊'; clase = 'a'; }
+  else { nivel = 'Logro Destacado (AD)'; emoji = '🏆'; clase = 'ad'; }
+
+  document.getElementById('emoji-final').textContent = emoji;
+  document.getElementById('nivel-logro').textContent = `Nivel de logro CNEB: ${nivel}`;
+
+  // Escalera
+  const escalera = document.getElementById('escalera');
+  escalera.innerHTML = `
+    <div class="peldaño ad ${clase === 'ad' ? 'activo' : ''}">AD · Logro Destacado (18–20)</div>
+    <div class="peldaño a ${clase === 'a' ? 'activo' : ''}">A · Logro Esperado (14–17)</div>
+    <div class="peldaño b ${clase === 'b' ? 'activo' : ''}">B · En Proceso (11–13)</div>
+    <div class="peldaño c ${clase === 'c' ? 'activo' : ''}">C · En Inicio (0–10)</div>
+  `;
+  // Resaltar el peldaño actual
+  document.querySelectorAll('.peldaño').forEach(p => {
+    if (p.classList.contains(clase)) {
+      p.style.transform = 'scale(1.08)';
+      p.style.boxShadow = '0 0 0 3px #333';
+    }
+  });
+
+  // Resumen
+  let resumen = '<h3 style="margin-bottom:8px;">Resumen de problemas</h3><ul style="padding-left:20px;">';
+  problemas.forEach(pr => {
+    const ok = estado.resueltos.includes(pr.id);
+    resumen += `<li>Problema ${pr.id} (${pr.nivel}): ${ok ? '✅ Resuelto' : '❌ No resuelto'}</li>`;
+  });
+  resumen += '</ul>';
+  document.getElementById('resumen-problemas').innerHTML = resumen;
+
+  // Reintento
+  const pendientes = problemas.filter(pr => !estado.resueltos.includes(pr.id));
+  if (pendientes.length > 0 && !estado.modoReintento) {
+    document.getElementById('zona-reintento').classList.remove('oculto');
+    estado.pendientesReintento = pendientes;
+  } else {
+    document.getElementById('zona-reintento').classList.add('oculto');
+  }
+}
+
+btnReintentar.addEventListener('click', () => {
+  estado.modoReintento = true;
+  estado.problemasActuales = estado.pendientesReintento;
+  estado.indice = 0;
+  estado.fallidos = [];
+  document.getElementById('zona-reintento').classList.add('oculto');
+  mostrarProblema();
+});
+
+btnReiniciar.addEventListener('click', () => {
+  location.reload();
+});
+</script>
+</body>
+</html>
